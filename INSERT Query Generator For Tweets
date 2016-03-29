@@ -1,0 +1,32 @@
+def generateInsertStatement(table):
+    import sqlite3
+    conn = sqlite3.connect('CSC455.db')
+    c = conn.cursor()
+    query = "SELECT * FROM "+table+";"
+    values = c.execute(query).fetchall()
+    end = ");" + "\n"
+    text_file = open("insert.txt", "w")
+    for record in values:
+        insert_statement = "INSERT INTO "+table+" VALUES ("
+        counter = 0
+        for item in record:
+            if counter != len(record)-1 and item == None:
+                item = ""
+                insert_statement = insert_statement + item + ", "
+                counter += 1
+            elif counter != len(record)-1:
+                insert_statement = insert_statement + "'" + str(item) + "'" + ", "
+                counter += 1
+            else:
+                if item == None:
+                    item = ""
+                    insert_statement = insert_statement + item
+                else:
+                    insert_statement = insert_statement + "'" + str(item) + "'"
+        insert_statement = insert_statement + end
+        with open("insert.txt", "a"):
+            text_file.write(insert_statement)
+    text_file.close()
+
+# test the function
+generateInsertStatement("Tweet")
