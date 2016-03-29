@@ -1,0 +1,14 @@
+## Write a python function that is going to generate and return a SQL INSERT statement given a table name and value list as parameters.
+
+def generateInsert(name, value):
+    sql = "INSERT INTO " + name + " VALUES ("
+    vals = ""
+    for i in value:
+        if i.isdigit():
+            vals = vals + i
+        else:
+            vals = vals + "'" + i + "'"
+        if value.index(i) != len(value)-1:
+            vals = vals + ", "
+    sql = sql + vals + ");"
+    return sql
