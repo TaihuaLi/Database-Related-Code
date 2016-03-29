@@ -1,0 +1,36 @@
+import sqlite3, time
+conn = sqlite3.connect('CSC455.db')
+c = conn.cursor()
+# i) Find tweets where tweet id_str contains “44” or “77” anywhere in the column
+i_start = time.time()
+c.execute("SELECT * FROM Tweet WHERE id_str LIKE '%44%' OR id_str LIKE '%77%';")
+i_end = time.time()
+print("The run time for i) is", i_end-i_start, "sec.")  # 0.0016 sec
+
+
+
+# ii) Find how many unique values are there in the “in_reply_to_user_id” column
+ii_start = time.time()
+c.execute("SELECT COUNT(DISTINCT in_reply_to_user_id) FROM Tweet;")
+ii_end = time.time()
+print("The run time for ii) is", ii_end-ii_start, "sec.") # 0.58 sec
+
+
+
+# iii) Find the tweet(s) with the longest text message
+iii_start = time.time()
+c.execute("SELECT text FROM Tweet WHERE length(text) == (SELECT max(length(text)) FROM Tweet);")
+iii_end = time.time()
+print("The run time for iii) is", iii_end-iii_start, "sec.") # 0.519 sec
+
+
+
+# iv) Find the average longitude and latitude value for each user name.
+iv_start = time.time()
+c.execute('''SELECT  u.name, avg(g.longitude), avg(g.latitude)
+          FROM Tweet t, User u, Geo g
+          WHERE t.user_id = u.id
+           AND  t.geo_id = g.geo_id
+          GROUP BY u.name;''')
+iv_end = time.time()
+print("The run time for iv) is", iv_end-iv_start, "sec.") # 1.65 sec
