@@ -1,0 +1,31 @@
+import re, time, json
+
+# i) Find tweets where tweet id_str contains “44” or “77” anywhere in the column
+Tweets = open("Tweets.txt",'r',encoding = 'utf8')
+b_i_start = time.time()
+count = 0
+for i in range(500000):
+    str_response = Tweets.readline()
+    jsonobject = json.loads(str_response)
+    regex = ['^.+44.+$','^44.+$','^.+44$','^44$','^.+77.+$','^77.+$','^.+77$','^77$']
+    for reg in regex:
+        match = re.compile(reg)
+        if match.findall(jsonobject['id_str']) != []:
+            count += 1
+b_i_end = time.time()
+# print(len(count))
+print ("The run time for i) is", b_i_end-b_i_start, "sec.") # 44 seconds
+
+# ii) Find how many unique values are there in the “in_reply_to_user_id” column
+Tweets = open("Tweets.txt",'r',encoding = 'utf8')
+b_ii_start = time.time()
+count = []
+start = time.time()
+for i in range(500000):
+    str_response = Tweets.readline()
+    jsonobject = json.loads(str_response)
+    if jsonobject['in_reply_to_user_id'] not in count:
+        count.append(jsonobject['in_reply_to_user_id'])
+b_ii_end = time.time()
+# print(len(count))
+print ("The run time for ii) is", b_ii_end-b_ii_start, "sec.") # 132 seconds
