@@ -1,0 +1,55 @@
+import sqlite3
+
+conn = sqlite3.connect('CSC455.db')
+c = conn.cursor()
+
+c.execute("DROP TABLE IF EXISTS User;")
+c.execute("DROP TABLE IF EXISTS Tweet;")
+c.execute("DROP TABLE IF EXISTS Geo;")
+
+
+c.execute('''CREATE TABLE User
+(
+id Number(30),
+name varchar(250),
+screen_name varchar(250),
+description varchar(250),
+friends_count number(10),
+  CONSTRAINT User_PK
+    PRIMARY KEY (id)
+);''')
+
+c.execute('''CREATE TABLE Tweet
+(
+created_at datetime,
+id_str number(10,0),
+text varchar(200),
+source varchar(160),
+in_reply_to_user_id number(10,0),
+in_reply_to_screen_name number(10,0),
+in_reply_to_status_id number(10,0),
+retweet_count number(10,0),
+contributors varchar(50),
+user_id VARCHAR2(150),
+geo_id number(11),
+  CONSTRAINT Tweet_PK
+     PRIMARY KEY(id_str),
+  CONSTRAINT Tweet_FK
+     FOREIGN KEY(user_id) REFERENCES User(id),
+  CONSTRAINT Tweet_FK2
+     FOREIGN KEY(geo_id) REFERENCES Geo(geo_id)
+);''')
+
+c.execute('''CREATE TABLE Geo
+(
+geo_id number(500),
+type varchar(30),
+longitude number(50, 25),
+latitude number(50, 25),
+    CONSTRAINT Geo_PK
+        PRIMARY KEY(geo_id)
+);''')
+
+c.close()
+conn.commit()
+conn.close()
