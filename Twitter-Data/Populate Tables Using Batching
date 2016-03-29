@@ -1,0 +1,122 @@
+def loadTweets(tweetLines):
+    import json
+    DamagedTweets = {}
+    errorfile = open("Error Tweets.txt", "w", encoding="utf-8")
+    batchRows = 500
+    GeobatchedInswerts = []
+    TweetbatchedInserts = []
+    UserbatchedInserts = []
+    counter = 1
+    while len(tweetLines) > 0:
+        line = tweetLines.pop(0)
+        try:
+            tweets = json.loads(line)
+            for value in tweets.values():
+                if value == "null":
+                    value = None
+            user_input = []
+            user_id = tweets['user']['id']
+            user_name = tweets['user']['name']
+            user_screen_name = tweets['user']['screen_name']
+            user_description = tweets['user']['description']
+            user_friends_count = tweets['user']['friends_count']
+            user_input.append(user_id)
+            user_input.append(user_name)
+            user_input.append(user_screen_name)
+            user_input.append(user_description)
+            user_input.append(user_friends_count)
+
+            # tweet input list
+            tweet_input = []
+            created_at = tweets['created_at']
+            id_str = tweets['id_str']
+            text = tweets['text']
+            source = tweets['source']
+            in_reply_to_user_id = tweets['in_reply_to_user_id']
+            in_reply_to_screen_name = tweets['in_reply_to_screen_name']
+            in_reply_to_status_id = tweets['in_reply_to_status_id']
+            try:
+                retweet_count = tweets['retweeted_status']['retweet_count']
+            except KeyError:
+                retweet_count = None
+            contributors = tweets['contributors']
+            u_id = tweets['user']['id']
+            tweet_input.append(created_at)
+            tweet_input.append(id_str)
+            tweet_input.append(text)
+            tweet_input.append(source)
+            tweet_input.append(in_reply_to_user_id)
+            tweet_input.append(in_reply_to_screen_name)
+            tweet_input.append(in_reply_to_status_id)
+            tweet_input.append(retweet_count)
+            tweet_input.append(contributors)
+            tweet_input.append(u_id)
+
+            # geo input list
+            if  tweets['geo'] != None:
+                geo_input = []
+                geoDict = tweets['geo']
+                geo_id = counter
+                geo_type = geoDict['type']
+                geo_longitude = geoDict['coordinates'][1]
+                geo_latitude = geoDict['coordinates'][0]
+                geo_input.append(geo_id)
+                geo_input.append(geo_type)
+                geo_input.append(geo_longitude)
+                geo_input.append(geo_latitude)
+                GeobatchedInswerts.append(geo_input)
+                tweet_input.append(geo_id)
+                counter += 1
+            else:
+                tweet_input.append(None)
+            TweetbatchedInserts.append(tweet_input)
+            UserbatchedInserts.append(user_input)
+            if len(TweetbatchedInserts) >= batchRows or len(tweetLines) == 0:
+                c.executemany('INSERT or ignore INTO Geo VALUES(?,?,?,?);', GeobatchedInswerts)
+                # to avoid foreign key constraint violation
+                c.executemany('INSERT or ignore INTO Tweet VALUES(?,?,?,?,?,?,?,?,?,?,?)', TweetbatchedInserts)
+                TweetbatchedInserts = []
+                GeobatchedInswerts = []
+            if len(GeobatchedInswerts) >= batchRows or len(tweetLines) == 0:
+                c.executemany('INSERT or ignore INTO Geo VALUES(?,?,?,?);', GeobatchedInswerts)
+                GeobatchedInswerts = []
+            if len(UserbatchedInserts) >= batchRows or len(tweetLines) == 0:
+                c.executemany('INSERT or ignore INTO User VALUES(?,?,?,?,?);', UserbatchedInserts)
+                UserbatchedInserts = []
+        except ValueError:
+            DamagedTweets[i] = line
+            errorfile.write(line.decode("utf8"))
+    errorfile.close()
+
+import time
+
+response = open("Tweets.txt", "r")
+
+e_start = time.time()
+
+loadTweets(response.readlines())
+
+e_end = time.time()
+
+e_runtime = e_end - e_start
+
+print("The run time for e) is", e_runtime, "sec.") # 128 sec on my computer
+# the run time using batching doubles compared to part d), where we load from the same file without using batching
+
+c.close()
+conn.commit()
+conn.close()
+response.close()
+
+conn = sqlite3.connect('CSC455.db')
+c = conn.cursor()
+
+print("There are", c.execute("SELECT COUNT(*) FROM User;").fetchall()[0], "cases in the User table")
+# 447,304 rows in the user table
+print("There are", c.execute("SELECT COUNT(*) FROM Tweet;").fetchall()[0], "cases in the Tweet table")
+# 499,776 rows in the tweet table
+print("There are", c.execute("SELECT COUNT(*) FROM Geo;").fetchall()[0], "cases in the Geo table")
+# 11,986 rows in the geo table
+
+c.close()
+conn.close()
