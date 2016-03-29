@@ -1,0 +1,100 @@
+import json, time
+import urllib.request as urllib
+
+response = urllib.urlopen("http://rasinsrv07.cstcis.cti.depaul.edu/CSC455/OneDayOfTweets.txt")
+DamagedTweets = {}
+errorfile = open("Error Tweets.txt", "w", encoding="utf-8")
+
+c_begin = time.time()
+counter = 1
+for i in range(500000):
+    str_response = response.readline()
+    try:
+        tweets = json.loads(str_response.decode("utf8"))
+        for value in tweets.values():
+            if value == "null":
+                value = None
+        # user input list
+        user_input = []
+        user_id = tweets['user']['id']
+        user_name = tweets['user']['name']
+        user_screen_name = tweets['user']['screen_name']
+        user_description = tweets['user']['description']
+        user_friends_count = tweets['user']['friends_count']
+        user_input.append(user_id)
+        user_input.append(user_name)
+        user_input.append(user_screen_name)
+        user_input.append(user_description)
+        user_input.append(user_friends_count)
+
+        # tweet input list
+        tweet_input = []
+        created_at = tweets['created_at']
+        id_str = tweets['id_str']
+        text = tweets['text']
+        source = tweets['source']
+        in_reply_to_user_id = tweets['in_reply_to_user_id']
+        in_reply_to_screen_name = tweets['in_reply_to_screen_name']
+        in_reply_to_status_id = tweets['in_reply_to_status_id']
+        try:
+            retweet_count = tweets['retweeted_status']['retweet_count']
+        except KeyError:
+            retweet_count = None
+        contributors = tweets['contributors']
+        u_id = tweets['user']['id']
+        tweet_input.append(created_at)
+        tweet_input.append(id_str)
+        tweet_input.append(text)
+        tweet_input.append(source)
+        tweet_input.append(in_reply_to_user_id)
+        tweet_input.append(in_reply_to_screen_name)
+        tweet_input.append(in_reply_to_status_id)
+        tweet_input.append(retweet_count)
+        tweet_input.append(contributors)
+        tweet_input.append(u_id)
+
+        # geo input list
+        if  tweets['geo'] != None:
+            geo_input = []
+            geoDict = tweets['geo']
+            geo_id = counter
+            geo_type = geoDict['type']
+            geo_longitude = geoDict['coordinates'][1]
+            geo_latitude = geoDict['coordinates'][0]
+            geo_input.append(geo_id)
+            geo_input.append(geo_type)
+            geo_input.append(geo_longitude)
+            geo_input.append(geo_latitude)
+            c.execute("INSERT or ignore INTO Geo VALUES(?,?,?,?);", geo_input)
+            tweet_input.append(geo_id)
+            counter += 1
+        else:
+            tweet_input.append(None)
+        c.execute("INSERT or ignore INTO Tweet VALUES(?,?,?,?,?,?,?,?,?,?,?);", tweet_input)
+        c.execute("INSERT or ignore INTO User VALUES(?,?,?,?,?);", user_input)
+    except ValueError:
+        DamagedTweets[i] = str_response
+        errorfile.write(str_response.decode("utf8"))
+c_end = time.time()
+c_run_time = c_end - c_begin
+print("The run time for c) is ", c_run_time, "sec.") # 220 sec on my computer
+
+c.close()
+conn.commit()
+conn.close()
+response.close()
+errorfile.close()
+
+# report of row count
+conn = sqlite3.connect('CSC455.db')
+c = conn.cursor()
+
+print("There are", c.execute("SELECT COUNT(*) FROM User;").fetchall()[0], "cases in the User table")
+# 447,304 rows in the user table
+print("There are", c.execute("SELECT COUNT(*) FROM Tweet;").fetchall()[0], "cases in the Tweet table")
+# 499,776 rows in the tweet table
+print("There are", c.execute("SELECT COUNT(*) FROM Geo;").fetchall()[0], "cases in the Geo table")
+# 11,986 rows in the geo table
+
+c.close()
+conn.close()
