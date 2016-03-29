@@ -1,0 +1,91 @@
+/*  
+a) retrieve the Author ID, Author First Name, Author Last Name and book ISBN of each book that author has written sorted in alphabetical order by the author’s last name
+*/
+select a.AUTHOR_ID as ID,
+          a.FIRST_NAME as FName, 
+          a.LAST_NAME as LName, 
+          w.ISBN as ISBN
+from AUTHORS a, WRITE w
+where a.AUTHOR_ID = w.AUTHOR_ID
+order by a.LAST_NAME;
+
+/* 
+b) retrieve the Publisher Name, Publisher Address, Book Title and Book ISBN for each book that publisher has published in alphabetical order by book title and only for books with titles that begin with the letter “D”.
+*/
+select p.PUB_NAME as Name, 
+       p.ADDRESS as Address, 
+       b.TITLE as Title, 
+       b.ISBN as ISBN
+from PUBLISHERS p, BOOKS b
+where B.TITLE like 'D%' AND b.PUB_ID = p.PUB_ID
+order by b.TITLE;
+
+/* 
+c) retrieve the Office, Floor, Building and the Building’s City for every instance in which the Building’s City starts with the letter “C”
+*/
+select o.OFFICE as Office, 
+       o.FLOOR as Floor, 
+       o.BUILDING as Building, 
+       b.CITY as City
+from OFFICE o, BUILDING b
+where b.CITY like 'C%' AND o.BUILDING = b.BUILDING;
+/* d)
+retrieve the Office, Floor, Building City, Client and Executive of all meetings that took place after 1/15/2014 in alphabetical order by executive name
+*/
+select o.OFFICE as Office, 
+       o.FLOOR as Floor, 
+       b.CITY as City, 
+       c.CLIENT as Client, 
+       c.EXECUTIVE as Executive
+from OFFICE o, BUILDING b, CLIENT c, MEETING m
+where b.CITY like 'C%' 
+      AND m.MEETING_DATE > TO_DATE('1/15/2014', 'mm/dd/yyyy')
+      AND o.BUILDING = b.BUILDING 
+      AND m.OFFICE = o.OFFICE 
+      AND m.CLIENT = c.CLIENT
+order by c.EXECUTIVE;
+
+/* 
+a) For each store identifier, retrieve store identifier and number of products sold in that store and arrange the results by number of products sold from low to high
+*/
+select str.storeid as Store,
+       sum(so.NOOFITEMS) as Amount
+from store str, soldvia so, salestransaction sa
+where str.storeid = sa.STOREID and sa.TID = so.TID 
+group by str.storeid
+order by sum(so.NOOFITEMS);
+
+/* 
+b) For each line item of a sales transaction that took place in the "Chicagoland" region, retrieve the transaction identifier, date of the transaction, customer name, customer zip, store identifier and store zip
+*/
+SELECT sa.TID as Transaction, 
+       sa.TDATE as Transaction_Date, 
+       c.CUSTOMERNAME as Customer_Name, 
+       c.CUSTOMERZIP as Customer_Zip, 
+       str.STOREID as Store, 
+       str.STOREZIP as Store_Zip
+FROM CUSTOMER c, SALESTRANSACTION sa, STORE str
+WHERE sa.CUSTOMERID = c.CUSTOMERID 
+      AND sa.STOREID = str.STOREID
+      AND str.STOREZIP like '606__';      
+/* 
+c) Find the customer Name of any customer that has bought a product worth $150 or more
+*/
+select c.customername as Customer, 
+       p.productid as Product_ID, 
+       p.productprice as Unit_Price
+from customer c, product p, salestransaction sa, soldvia so
+where p.productprice >= 150
+      AND c.customerid = sa.customerid
+      AND sa.tid = so.tid
+      AND so.productid = p.productid;
+      
+/*
+d) For each product category, retrieve the category name and the total amount of dollars for all products sold in that category and arrange the results highest total to lowest sum
+*/
+select c.categoryname as Category, 
+       sum(p.productprice) as Total_Sold
+from category c, product p
+where c.categoryid = p.categoryid
+group by c.categoryname
+order by sum(p.productprice) desc;
