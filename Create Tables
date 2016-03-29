@@ -1,0 +1,79 @@
+## Create and populate tables
+create table AUTHORS 
+(Last_Name varchar(15),
+First_Name varchar(15),
+Author_ID number(10) not null,
+Birthdate date,
+constraint AUTHORS
+primary key(Author_ID));
+
+create table PUBLISHERS
+(Pub_Name varchar(50),
+Pub_ID number(10) not null,
+Address varchar(50),
+constraint PUBLISHERS
+primary key(Pub_ID));
+
+create table BOOKS
+(ISBN varchar(8) not null,
+Title varchar(50),
+Pub_ID number(10),
+constraint Books
+primary key (ISBN),
+foreign key (Pub_ID) references PUBLISHERS (Pub_ID));
+
+create table WRITE
+(Author_ID number(10),
+ISBN varchar(8),
+Rank number(2),
+constraint WRITE
+primary key(Author_ID, ISBN),
+foreign key (Author_ID) references AUTHORS(Author_ID),
+foreign key (ISBN) references BOOKS (ISBN));
+
+-- insert records
+
+insert into AUTHORS (Last_Name, First_Name, Author_ID, Birthdate)
+values ('King', 'Stephen', 2, TO_DATE('09/September/1947', 'dd/mm/yyyy'));
+
+insert into AUTHORS (Last_Name, First_Name, Author_ID, Birthdate)
+values ('Asimov', 'Isaac', 4, TO_DATE('02/January/1920', 'dd/mm/yyyy'));
+
+insert into AUTHORS (Last_Name, First_Name, Author_ID, Birthdate)
+values ('Verne', 'Jules', 7, TO_DATE('08/February/1828', 'dd/mm/yyyy'));
+
+insert into AUTHORS (Last_Name, First_Name, Author_ID, Birthdate)
+values ('Rowling', 'Joanne', 37, TO_DATE('31/July/1965', 'dd/mm/yyyy'));
+
+insert into PUBLISHERS (Pub_Name, Pub_ID, Address)
+values ('Bloomsbury Publishing', 17, 'London Borough of Camden');
+
+insert into PUBLISHERS (Pub_Name, Pub_ID, Address)
+values ('Arthur A. Levine Books', 18, 'New York City');
+
+insert into BOOKS (ISBN, Title, Pub_ID)
+values ('1111-111', 'Database from outer space', 17);
+
+insert into BOOKS (ISBN, Title, Pub_ID)
+values ('2222-222', 'Dark SQL', 17);
+
+insert into BOOKS (ISBN, Title, Pub_ID)
+values ('3333-333', 'The night of the living databases', 18);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (2, '1111-111', 1);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (4, '1111-111', 2);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (4, '2222-222', 2);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (7, '2222-222', 1);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (37, '3333-333', 1);
+
+insert into WRITE (Author_ID, ISBN, Rank)
+values (2, '3333-333', 2);
