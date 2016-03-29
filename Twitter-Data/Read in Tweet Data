@@ -1,0 +1,20 @@
+# b) read in at least 500,000 tweets in write into local text file. record run time
+import urllib.request as urllib
+import time
+response = urllib.urlopen("http://rasinsrv07.cstcis.cti.depaul.edu/CSC455/OneDayOfTweets.txt")
+Tweets_input = {}
+tweet = open("Tweets.txt", "w")
+
+# load 500,000 tweets
+b_start = time.time()
+for i in range(500000):
+    str_response = response.readline()
+    Tweets_input[i] = str_response
+    tweet.write(str_response.decode("utf8"))
+b_end = time.time()
+
+b_run_time = b_end - b_start
+print("The run time for b) is", b_run_time, "sec.") # 182 sec on my computer
+
+response.close()
+tweet.close()
