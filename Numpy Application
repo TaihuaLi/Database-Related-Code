@@ -1,0 +1,43 @@
+# Write an ORFunction that combines two boolean Numpy matrices and compare boolean values
+# first solution
+def ORFunction(matrix1, matrix2):
+    import numpy as np
+    matrix1 = np.array(matrix1)
+    matrix2 = np.array(matrix2)
+    output = []
+    Error = "Only one or two dimensional matrices are allowed"
+    SError = "Matrices need to be in the same shape"
+    if np.ndim(matrix1) > 2:
+        return Error
+    elif np.ndim(matrix2) > 2:
+        return Error
+    elif np.shape(matrix1) != np.shape(matrix2):
+        return SError
+    else:
+        matrix = np.concatenate((matrix1, matrix2), axis=1)
+        range_max = int(np.size(matrix, 1)/2)
+        for row in matrix:
+            for i in range(range_max):
+                if row[i] == row[i + range_max] and row[i] == False:
+                    output.append(False)
+                else:
+                    output.append(True)
+    shaped_output = np.matrix(output).reshape(matrix1.shape)
+    return shaped_output
+
+# second solution
+def orFunction(array1, array2):
+    if array1.shape != array2.shape:
+        return "Matrices need to be in the same shape"
+    else:
+        result = np.where(array1==1, True, np.where(array2==1, True, False))
+    print(result)
+    return result
+    
+    
+import numpy as np
+# to test
+ORFunction([[True, False], [False, False]], [[False, True], [True, False]])
+# should return [[True, True], [True, False]]
+ORFunction([[True, False, True], [False, False, True]], [[False, True], [True, False]])
+# should return error message
