@@ -1,0 +1,134 @@
+# a) export geo table. create a single default entry for the "unknown" location and round
+# longitude and latitude to a maximum of 4 digits after the decimal
+
+def ExportGeo():
+    import sqlite3
+    conn = sqlite3.connect('CSC455.db')
+    c = conn.cursor()
+    geo_data = c.execute("SELECT * FROM Geo;").fetchall()
+    geo_text = open('Geo data file.txt', 'w', encoding='utf8')
+    counter = 0
+    for data in geo_data:
+        output = " "
+        lst_data = list(data)
+        for (index, value) in enumerate(lst_data):
+            lst_data[2] = round(float(lst_data[2]), 4)
+            lst_data[3] = round(float(lst_data[3]), 4)
+            if type(value) == type(0) and index != 2:
+                output += str(value) + '|'
+            elif type(value) == type(0):
+                output += str(value)
+            else:
+                if type(value) == int:
+                    output += str(round(value, 4)) + '|'
+                else:
+                    output += "'" + str(value) + "'" + "|"
+        if index < len(lst_data) - 1:
+            output += "|"
+        final_output = output + "\n"
+        geo_text.write(final_output)
+        counter += 1
+    geo_id = counter + 1
+    k = " " + str(geo_id) + "| 'Unknown' | 'Unknown' | 'Unknown'"
+    geo_text.write(k)
+    geo_text.close()
+    c.close()
+    conn.close()
+    geo_text.close()
+
+
+import time
+
+a_start = time.time()
+ExportGeo()
+a_end = time.time()
+print("The run time for a) is", a_end-a_start, "sec.") # 0.2 sec
+
+# b) tweet table: replace Null to the unknown entry in geo. report how many unknowns are there
+
+def ExportTweet(table):
+    import sqlite3
+    conn = sqlite3.connect('CSC455.db')
+    c = conn.cursor()
+    geo_data = c.execute("SELECT * FROM Geo;").fetchall()
+    data_tweet = c.execute("SELECT * FROM %s;" % table).fetchall()
+    tweet_text = open('Tweet value.txt', 'w', encoding='utf8')
+    Null_values = 0
+    for line in data_tweet:
+        output = " "
+        lst_data = list(line)
+        for (index, value) in enumerate(lst_data):
+            if lst_data[10] == 'NULL' or lst_data[10] == None:
+                Null_values += 1
+                lst_data[10] = (len(geo_data) + 1)
+            if value == 0:
+                output += str(value) + '| '
+            else:
+                output += str(value) + '| '
+
+        if index < len(lst_data) - 1:
+            output += " "
+        final_output = output + "\n"
+        tweet_text.write(final_output)
+    tweet_text.close()
+    Allvalues = len(data_tweet)
+    Known_Values = (Allvalues - Null_values)
+    KnownP = round(((Known_Values / Allvalues) * 100), 2)
+    print('There are', Known_Values, ' known values and', Null_values, 'unknown values.')
+    c.close()
+    conn.close()
+    tweet_text.close()
+
+import time
+
+b_start = time.time()
+ExportTweet('Tweet')
+b_end = time.time()
+print("The run time for a) is", b_end-b_start, "sec.")
+
+# c) user table: add a column specifies whether “screen_name” or “description” attribute
+# contains within it the “name” attribute of the same user (one extra column)
+
+def ExportUser(table):
+    import sqlite3
+    conn = sqlite3.connect('CSC455.db')
+    c = conn.cursor()
+    my_data = c.execute("SELECT * FROM %s;" % table).fetchall()
+    user_file = open('User Value.txt', 'w', encoding='utf8')
+    for line in my_data:
+        output = " "
+        lst = list(line)
+        for (index, value) in enumerate(lst):
+            if lst[1] != None or lst[1] != '':
+                if lst[3] == None:
+                    if lst[1] in lst[2]:
+                        boo = True
+                    else:
+                        boo = False
+                else:
+                    if lst[1] in lst[2] or lst[1] in lst[3]:
+                        boo = True
+                    elif lst[1] in lst[2] and lst[1] in lst[3]:
+                        boo = True
+                    else:
+                        boo = False
+            else:
+                boo = False
+            if value == None:
+                output += '| ' + str('NULL') + '| '
+            else:
+                output += str(value) + '| '
+        if index < len(lst) - 1:
+            output += ", "
+        inner1 = output + str(boo) + "\n"
+        user_file.write(inner1)
+    c.close()
+    conn.close()
+    user_file.close()
+
+import time
+
+c_start = time.time()
+ExportUser('User')
+c_end = time.time()
+print("The run time for a) is", c_end-c_start, "sec.") # 8.2 sec
